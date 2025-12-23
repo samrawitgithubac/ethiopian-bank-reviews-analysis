@@ -34,16 +34,17 @@ ENV/
 *~
 
 # Jupyter Notebook
-.ipynb_checkpoints
+.ipynb_checkpoints/
+*.ipynb_checkpoints
 
 # Environment variables
 .env
 .env.local
 
-# Data files (optional - uncomment if you don't want to commit data)
-# data/raw/*.csv
-# data/cleaned/*.csv
-# data/processed/*.csv
+# Data files - exclude all data
+data/
+*.csv
+!requirements.txt
 
 # Database
 *.db
@@ -62,4 +63,3 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
-

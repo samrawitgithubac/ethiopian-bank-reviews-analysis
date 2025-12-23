@@ -8,3 +8,13 @@ vaderSentiment
 spacy
 scikit-learn
 psycopg2-binary
+fastapi
+uvicorn[standard]
+pydantic
+pytest
+pytest-cov
+black
+flake8
+matplotlib
+seaborn
+jupyter
