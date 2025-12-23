@@ -74,11 +74,29 @@ As a Data Analyst at **Omega Consultancy**, the goal is to scrape app reviews, a
 ---
 
 ## Task 3: PostgreSQL Database
+
+### Steps
+1. **Install PostgreSQL**
+   - Download and install PostgreSQL from https://www.postgresql.org/download/
+   - Note your PostgreSQL password (default user is `postgres`)
+
+2. **Database Setup**
+   - Run `python database_setup.py` to create database and tables
+   - Or manually run `schema.sql` in PostgreSQL
+
+3. **Insert Data**
+   - Run `python insert_reviews.py` to insert cleaned review data
+   - Script automatically handles sentiment and theme data if available
+
+4. **Verify**
+   - Run `python verify_database.py` to check data integrity
+
+### Database Schema
 - **Database:** `bank_reviews`
 - **Tables:**
-  - `banks`: `bank_id` (PK), `bank_name`, `app_name`
-  - `reviews`: `review_id` (PK), `bank_id` (FK), `review_text`, `rating`, `review_date`, `sentiment_label`, `sentiment_score`, `source`
-- Use Python (`psycopg2` or SQLAlchemy) to insert cleaned data.
+  - `banks`: `bank_id` (PK), `bank_name`, `app_name`, `created_at`
+  - `reviews`: `review_id` (PK), `bank_id` (FK), `review_text`, `rating`, `review_date`, `sentiment_label`, `sentiment_score`, `theme`, `source`, `created_at`
+- Uses `psycopg2` for database operations
 
 ---
 
@@ -102,17 +120,77 @@ As a Data Analyst at **Omega Consultancy**, the goal is to scrape app reviews, a
 
 ---
 
+## Project Structure
+
+```
+ethiopian-bank-reviews-analysis/
+├── README.md                    # Project documentation
+├── requirements.txt             # Python dependencies
+├── .gitignore                   # Git ignore rules
+│
+├── data/                        # Data files
+│   ├── raw/                     # Raw scraped data
+│   │   └── ethiopian_bank_reviews.csv
+│   ├── cleaned/                 # Cleaned/preprocessed data
+│   │   └── cleaned_reviews.csv
+│   └── processed/               # Processed data with sentiment/themes
+│       ├── reviews_with_sentiment.csv
+│       └── reviews_with_themes.csv
+│
+├── scripts/                      # Python scripts organized by task
+│   ├── task1_data_collection/
+│   │   ├── scrape_reviews.py    # Web scraping script
+│   │   ├── preprocess_reviews.py # Data cleaning script
+│   │   ├── find_app_id.py       # Helper script
+│   │   └── test_boa_apps.py     # Testing script
+│   │
+│   ├── task2_analysis/
+│   │   ├── sentiment_analysis.py # Sentiment analysis
+│   │   └── thematic_analysis.py  # Theme extraction
+│   │
+│   └── task3_database/
+│       ├── database_setup.py    # Database creation
+│       ├── insert_reviews.py    # Data insertion
+│       └── verify_database.py    # Verification queries
+│
+├── database/                    # Database files
+│   └── schema.sql               # PostgreSQL schema
+│
+└── docs/                        # Documentation
+    ├── TASK_REVIEW_SUMMARY.md
+    ├── TASK3_SETUP_GUIDE.md
+    └── Readmetask1.txt
+```
+
 ## Getting Started
 
 1. **Clone repository**
 ```bash
 git clone <repo-url>
-cd <repo-folder>
-Install dependencies
+cd ethiopian-bank-reviews-analysis
+```
 
+2. **Install dependencies**
+```bash
 pip install -r requirements.txt
+python -m spacy download en_core_web_sm  # For thematic analysis
+```
 
+3. **Run Task 1: Data Collection**
+```bash
+python scripts/task1_data_collection/scrape_reviews.py
+python scripts/task1_data_collection/preprocess_reviews.py
+```
 
-Run scraping and preprocessing script
+4. **Run Task 2: Analysis**
+```bash
+python scripts/task2_analysis/sentiment_analysis.py
+python scripts/task2_analysis/thematic_analysis.py
+```
 
-python task1_scraper.py
+5. **Run Task 3: Database Setup**
+```bash
+python scripts/task3_database/database_setup.py
+python scripts/task3_database/insert_reviews.py
+python scripts/task3_database/verify_database.py
+```

@@ -2,3 +2,9 @@ google-play-scraper
 pandas
 numpy
 python-dateutil
+transformers
+torch
+vaderSentiment
+spacy
+scikit-learn
+psycopg2-binary

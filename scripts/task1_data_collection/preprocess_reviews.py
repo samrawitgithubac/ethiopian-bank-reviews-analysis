@@ -13,7 +13,7 @@ This script:
 import pandas as pd
 from datetime import datetime
 
-def preprocess_reviews(input_file="ethiopian_bank_reviews.csv", output_file="cleaned_reviews.csv"):
+def preprocess_reviews(input_file="data/raw/ethiopian_bank_reviews.csv", output_file="data/cleaned/cleaned_reviews.csv"):
     """
     Preprocess the scraped reviews data.
     
@@ -24,6 +24,9 @@ def preprocess_reviews(input_file="ethiopian_bank_reviews.csv", output_file="cle
     print("=" * 60)
     print("REVIEWS PREPROCESSING")
     print("=" * 60)
+    
+    # Create output directory if it doesn't exist
+    os.makedirs(os.path.dirname(output_file) if os.path.dirname(output_file) else ".", exist_ok=True)
     
     # Load the data
     print(f"\n📥 Loading data from {input_file}...")

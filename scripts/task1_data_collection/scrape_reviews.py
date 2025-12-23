@@ -1,6 +1,7 @@
 from google_play_scraper import reviews, Sort, app
 import pandas as pd
 import time
+import os
 
 # App IDs - Updated based on Google Play Store search results
 # Verified using find_app_id.py helper script
@@ -182,7 +183,8 @@ if not all_data:
 df = pd.DataFrame(all_data)
 
 # Save to CSV
-output_file = "ethiopian_bank_reviews.csv"
+os.makedirs("data/raw", exist_ok=True)
+output_file = "data/raw/ethiopian_bank_reviews.csv"
 df.to_csv(output_file, index=False, encoding="utf-8")
 
 print(f"\n✅ Data saved to: {output_file}")
