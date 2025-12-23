@@ -1,131 +1,135 @@
 """
-Sentiment Analysis Script for Ethiopian Bank Reviews
-Task 2 - Sentiment and Thematic Analysis
-
-This script:
-- Performs sentiment analysis using distilbert-base-uncased-finetuned-sst-2-english
-- Falls back to VADER if transformers is not available
-- Computes sentiment scores (positive, negative, neutral)
-- Saves results with sentiment labels and scores
+Sentiment Analysis Module
+Performs sentiment analysis on bank reviews using transformers (DistilBERT) or VADER
 """
 
 import pandas as pd
-import numpy as np
-from typing import Dict, Tuple
-import warnings
-warnings.filterwarnings('ignore')
+import os
+import sys
+from pathlib import Path
 
-# Try to import transformers for distilbert
+# Add project root to path
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
 try:
     from transformers import pipeline
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     TRANSFORMERS_AVAILABLE = False
-    print("⚠ transformers not available, will use VADER instead")
 
-# Try to import VADER as fallback
 try:
     from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
     VADER_AVAILABLE = True
 except ImportError:
     VADER_AVAILABLE = False
-    print("⚠ VADER not available, please install vaderSentiment")
+
 
 def initialize_sentiment_analyzer():
-    """Initialize the sentiment analyzer (prefer distilbert, fallback to VADER)."""
+    """
+    Initialize sentiment analyzer (prefer DistilBERT, fallback to VADER).
+    
+    Returns:
+        Tuple of (analyzer_type, analyzer)
+    """
     if TRANSFORMERS_AVAILABLE:
         try:
-            print("📦 Loading distilbert-base-uncased-finetuned-sst-2-english...")
-            classifier = pipeline("sentiment-analysis", 
-                                model="distilbert-base-uncased-finetuned-sst-2-english")
-            print("✅ distilbert model loaded successfully")
-            return "distilbert", classifier
+            print("📦 Loading DistilBERT sentiment analyzer...")
+            analyzer = pipeline(
+                "sentiment-analysis",
+                model="distilbert-base-uncased-finetuned-sst-2-english",
+                return_all_scores=False
+            )
+            print("✅ DistilBERT loaded successfully")
+            return "distilbert", analyzer
         except Exception as e:
-            print(f"⚠ Error loading distilbert: {e}")
+            print(f"⚠️  DistilBERT failed to load: {e}")
             print("   Falling back to VADER...")
     
     if VADER_AVAILABLE:
-        print("📦 Using VADER sentiment analyzer...")
+        print("📦 Loading VADER sentiment analyzer...")
         analyzer = SentimentIntensityAnalyzer()
+        print("✅ VADER loaded successfully")
         return "vader", analyzer
     
-    raise ImportError("Neither transformers nor vaderSentiment is available. Please install one of them.")
+    raise ImportError("Neither transformers nor vaderSentiment is available. Please install one.")
 
 
-def analyze_sentiment_distilbert(text: str, classifier) -> Tuple[str, float]:
+def analyze_sentiment_distilbert(text, analyzer):
     """
-    Analyze sentiment using distilbert model.
+    Analyze sentiment using DistilBERT.
     
-    Returns:
-        Tuple of (label, score) where label is 'POSITIVE' or 'NEGATIVE'
-        and score is confidence (0-1)
-    """
-    if pd.isna(text) or str(text).strip() == "":
-        return "NEUTRAL", 0.5
-    
-    try:
-        result = classifier(str(text))[0]
-        label = result['label']
-        score = result['score']
+    Args:
+        text: Review text
+        analyzer: DistilBERT pipeline
         
-        # Convert to standard format
-        if label == 'POSITIVE':
-            return "POSITIVE", float(score)
-        elif label == 'NEGATIVE':
-            return "NEGATIVE", float(score)
+    Returns:
+        Tuple of (label, score)
+    """
+    try:
+        result = analyzer(text[:512])  # Limit to 512 tokens
+        label = result[0]['label']
+        score = result[0]['score']
+        
+        # Normalize label to POSITIVE/NEGATIVE
+        if label.upper() == 'POSITIVE':
+            return 'POSITIVE', score
+        elif label.upper() == 'NEGATIVE':
+            return 'NEGATIVE', score
         else:
-            return "NEUTRAL", 0.5
+            return 'NEUTRAL', score
     except Exception as e:
-        print(f"⚠ Error analyzing text: {e}")
-        return "NEUTRAL", 0.5
+        print(f"⚠️  Error analyzing sentiment: {e}")
+        return 'NEUTRAL', 0.5
 
 
-def analyze_sentiment_vader(text: str, analyzer) -> Tuple[str, float]:
+def analyze_sentiment_vader(text, analyzer):
     """
     Analyze sentiment using VADER.
     
+    Args:
+        text: Review text
+        analyzer: VADER SentimentIntensityAnalyzer
+        
     Returns:
-        Tuple of (label, score) where label is 'POSITIVE', 'NEGATIVE', or 'NEUTRAL'
-        and score is compound score (-1 to 1)
+        Tuple of (label, score)
     """
-    if pd.isna(text) or str(text).strip() == "":
-        return "NEUTRAL", 0.0
-    
     try:
-        scores = analyzer.polarity_scores(str(text))
+        scores = analyzer.polarity_scores(text)
         compound = scores['compound']
         
         # Classify based on compound score
         if compound >= 0.05:
-            label = "POSITIVE"
-            score = compound
+            label = 'POSITIVE'
+            score = scores['pos']
         elif compound <= -0.05:
-            label = "NEGATIVE"
-            score = abs(compound)  # Make it positive for consistency
+            label = 'NEGATIVE'
+            score = scores['neg']
         else:
-            label = "NEUTRAL"
-            score = abs(compound)
+            label = 'NEUTRAL'
+            score = scores['neu']
         
-        return label, float(score)
+        return label, score
     except Exception as e:
-        print(f"⚠ Error analyzing text: {e}")
-        return "NEUTRAL", 0.0
+        print(f"⚠️  Error analyzing sentiment: {e}")
+        return 'NEUTRAL', 0.5
 
 
-def perform_sentiment_analysis(input_file="data/cleaned/cleaned_reviews.csv", output_file="data/processed/reviews_with_sentiment.csv"):
+def perform_sentiment_analysis(input_file="data/cleaned/cleaned_reviews.csv",
+                               output_file="data/processed/reviews_with_sentiment.csv"):
     """
     Perform sentiment analysis on cleaned reviews.
     
     Args:
         input_file: Path to cleaned reviews CSV
-        output_file: Path to save reviews with sentiment analysis
+        output_file: Path to save results
+        
+    Returns:
+        DataFrame with sentiment analysis results
     """
-    print("=" * 60)
+    print("=" * 70)
     print("SENTIMENT ANALYSIS")
-    print("=" * 60)
-    
-    # Create output directory if it doesn't exist
-    os.makedirs(os.path.dirname(output_file) if os.path.dirname(output_file) else ".", exist_ok=True)
+    print("=" * 70)
     
     # Load data
     print(f"\n📥 Loading data from {input_file}...")
@@ -134,7 +138,6 @@ def perform_sentiment_analysis(input_file="data/cleaned/cleaned_reviews.csv", ou
         print(f"   ✓ Loaded {len(df)} reviews")
     except FileNotFoundError:
         print(f"   ❌ Error: {input_file} not found!")
-        print("   Please run preprocess_reviews.py first.")
         return None
     except Exception as e:
         print(f"   ❌ Error loading file: {e}")
@@ -148,75 +151,54 @@ def perform_sentiment_analysis(input_file="data/cleaned/cleaned_reviews.csv", ou
         df['review_id'] = range(1, len(df) + 1)
     
     # Perform sentiment analysis
-    print(f"\n🔍 Analyzing sentiment using {analyzer_type}...")
-    print("   This may take a few minutes...")
-    
-    sentiment_labels = []
-    sentiment_scores = []
+    print(f"\n🔍 Analyzing sentiment using {analyzer_type.upper()}...")
+    sentiments = []
+    scores = []
     
     for idx, row in df.iterrows():
-        if (idx + 1) % 100 == 0:
-            print(f"   Processed {idx + 1}/{len(df)} reviews...")
-        
-        text = row['review_text']
+        review_text = str(row.get('review_text', ''))
         
         if analyzer_type == "distilbert":
-            label, score = analyze_sentiment_distilbert(text, analyzer)
+            label, score = analyze_sentiment_distilbert(review_text, analyzer)
         else:
-            label, score = analyze_sentiment_vader(text, analyzer)
+            label, score = analyze_sentiment_vader(review_text, analyzer)
         
-        sentiment_labels.append(label)
-        sentiment_scores.append(score)
+        sentiments.append(label)
+        scores.append(score)
+        
+        # Progress indicator
+        if (idx + 1) % 100 == 0:
+            print(f"   Processed {idx + 1}/{len(df)} reviews...")
     
-    # Add sentiment columns
-    df['sentiment_label'] = sentiment_labels
-    df['sentiment_score'] = sentiment_scores
-    
-    # Convert sentiment_label to standard format (POSITIVE, NEGATIVE, NEUTRAL)
-    # distilbert only returns POSITIVE/NEGATIVE, so we'll keep it as is
-    # but add a neutral category based on score threshold if needed
-    if analyzer_type == "distilbert":
-        # For distilbert, we can consider low confidence scores as neutral
-        df.loc[df['sentiment_score'] < 0.6, 'sentiment_label'] = 'NEUTRAL'
+    # Add results to dataframe
+    df['sentiment_label'] = sentiments
+    df['sentiment_score'] = scores
     
     # Save results
-    print(f"\n💾 Saving results to {output_file}...")
-    try:
-        df.to_csv(output_file, index=False, encoding='utf-8')
-        print(f"   ✓ Successfully saved {len(df)} reviews with sentiment analysis")
-    except Exception as e:
-        print(f"   ❌ Error saving file: {e}")
-        return None
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    df.to_csv(output_file, index=False, encoding='utf-8')
     
-    # Print summary statistics
-    print("\n" + "=" * 60)
-    print("SENTIMENT ANALYSIS SUMMARY")
-    print("=" * 60)
-    print(f"\nTotal reviews analyzed: {len(df)}")
-    print(f"\nSentiment distribution:")
+    print(f"\n✅ Sentiment analysis complete!")
+    print(f"   Results saved to: {output_file}")
+    print(f"\n📊 Sentiment Distribution:")
     sentiment_counts = df['sentiment_label'].value_counts()
     for label, count in sentiment_counts.items():
         percentage = (count / len(df)) * 100
         print(f"   {label}: {count} ({percentage:.1f}%)")
     
-    print(f"\nAverage sentiment scores:")
-    avg_scores = df.groupby('sentiment_label')['sentiment_score'].mean()
-    for label, score in avg_scores.items():
-        print(f"   {label}: {score:.3f}")
-    
-    print(f"\nSentiment by bank:")
-    bank_sentiment = pd.crosstab(df['bank'], df['sentiment_label'], normalize='index') * 100
-    print(bank_sentiment.round(1))
-    
-    print(f"\nSentiment by rating:")
-    rating_sentiment = pd.crosstab(df['rating'], df['sentiment_label'], normalize='index') * 100
-    print(rating_sentiment.round(1))
-    
-    print("\n✅ Sentiment analysis complete!")
-    
     return df
 
 
 if __name__ == "__main__":
-    perform_sentiment_analysis()
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Perform sentiment analysis on reviews")
+    parser.add_argument("-i", "--input", default="data/cleaned/cleaned_reviews.csv",
+                       help="Input CSV file with cleaned reviews")
+    parser.add_argument("-o", "--output", default="data/processed/reviews_with_sentiment.csv",
+                       help="Output CSV file with sentiment analysis")
+    
+    args = parser.parse_args()
+    
+    perform_sentiment_analysis(args.input, args.output)
 
