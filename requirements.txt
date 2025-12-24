@@ -18,3 +18,4 @@ flake8
 matplotlib
 seaborn
 jupyter
+wordcloud

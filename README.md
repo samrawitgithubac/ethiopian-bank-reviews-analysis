@@ -100,13 +100,31 @@ As a Data Analyst at **Omega Consultancy**, the goal is to scrape app reviews, a
 
 ---
 
-## Task 4: Insights and Recommendations
-- Identify 2+ **drivers** and **pain points** per bank.
-- Create 3–5 visualizations (Matplotlib, Seaborn):
-  - Sentiment trends
-  - Rating distributions
-  - Keyword clouds
-- Provide practical app improvement suggestions.
+## Task 4: Insights and Recommendations ✅ **COMPLETED**
+
+### Completed Components:
+- ✅ **Insights Analysis:** Identified 2+ drivers and pain points per bank
+- ✅ **Visualizations:** Created 8 stakeholder-friendly visualizations:
+  - Sentiment distribution by bank
+  - Rating distribution comparison
+  - Sentiment trends over time
+  - Theme distribution analysis
+  - Bank comparison metrics
+  - Word clouds for positive reviews (3 banks)
+- ✅ **Final Report:** 10-page comprehensive report with recommendations
+- ✅ **Recommendations:** 2+ actionable recommendations per bank
+
+### Key Findings:
+- **CBE:** 4.13 rating - Strong performer, needs transaction speed optimization
+- **BOA:** 3.37 rating - Requires urgent improvement, critical bugs identified
+- **Dashen:** 4.01 rating - Good performance, minor enhancements needed
+
+### Files:
+- `scripts/task4_insights/insights_analysis.py` - Analysis script
+- `scripts/task4_insights/visualizations.py` - Visualization generator
+- `reports/FINAL_REPORT.md` - Final report (10 pages)
+- `reports/figures/` - All visualization images
+- `data/processed/bank_insights.csv` - Insights data
 
 ---
 
@@ -114,7 +132,7 @@ As a Data Analyst at **Omega Consultancy**, the goal is to scrape app reviews, a
 - Python: `pandas`, `google-play-scraper`, `dateutil`
 - NLP & Sentiment: `TextBlob`, `VADER`, `transformers`, `spaCy`
 - Database: PostgreSQL, `psycopg2`
-- Visualization: Matplotlib, Seaborn
+- Visualization: Matplotlib, Seaborn, WordCloud
 - Git & GitHub for version control
 - Unit testing: `pytest`, `unittest`
 
@@ -148,17 +166,26 @@ ethiopian-bank-reviews-analysis/
 │   │   ├── sentiment_analysis.py # Sentiment analysis
 │   │   └── thematic_analysis.py  # Theme extraction
 │   │
-│   └── task3_database/
-│       ├── database_setup.py    # Database creation
-│       ├── insert_reviews.py    # Data insertion
-│       └── verify_database.py    # Verification queries
+│   ├── task3_database/
+│   │   ├── database_setup.py    # Database creation
+│   │   ├── insert_reviews.py    # Data insertion
+│   │   └── verify_database.py    # Verification queries
+│   │
+│   └── task4_insights/
+│       ├── insights_analysis.py  # Driver/pain point identification
+│       └── visualizations.py     # Report visualizations
 │
 ├── database/                    # Database files
 │   └── schema.sql               # PostgreSQL schema
 │
+├── reports/                     # Reports and visualizations
+│   ├── FINAL_REPORT.md         # Task 4 final report (10 pages)
+│   └── figures/                # Visualization images
+│
 └── docs/                        # Documentation
     ├── TASK_REVIEW_SUMMARY.md
     ├── TASK3_SETUP_GUIDE.md
+    ├── TASK4_SUMMARY.md        # Task 4 completion summary
     └── Readmetask1.txt
 ```
 
@@ -194,3 +221,12 @@ python scripts/task3_database/database_setup.py
 python scripts/task3_database/insert_reviews.py
 python scripts/task3_database/verify_database.py
 ```
+
+6. **Run Task 4: Insights and Visualizations**
+```bash
+python scripts/task4_insights/insights_analysis.py
+python scripts/task4_insights/visualizations.py
+```
+
+7. **View Final Report**
+Open `reports/FINAL_REPORT.md` for comprehensive insights and recommendations.
