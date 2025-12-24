@@ -81,15 +81,18 @@ As a Data Analyst at **Omega Consultancy**, the goal is to scrape app reviews, a
    - Note your PostgreSQL password (default user is `postgres`)
 
 2. **Database Setup**
-   - Run `python database_setup.py` to create database and tables
-   - Or manually run `schema.sql` in PostgreSQL
+   - Run `python scripts/task3_database/database_setup.py` to create tables
+   - Or manually run `database/schema.sql` in PostgreSQL
+   - **Note:** Assumes database `bank_reviews` already exists
 
 3. **Insert Data**
-   - Run `python insert_reviews.py` to insert cleaned review data
+   - Run `python scripts/task3_database/insert_reviews.py` to insert cleaned review data
    - Script automatically handles sentiment and theme data if available
+   - Requires `data/processed/reviews_with_themes.csv` (from Task 2)
 
 4. **Verify**
-   - Run `python verify_database.py` to check data integrity
+   - Run `python scripts/task3_database/verify_database.py` to check data integrity
+   - Shows review counts, ratings, sentiment distribution, and data completeness
 
 ### Database Schema
 - **Database:** `bank_reviews`
@@ -217,9 +220,14 @@ python scripts/task2_analysis/thematic_analysis.py
 
 5. **Run Task 3: Database Setup**
 ```bash
-python scripts/task3_database/database_setup.py
-python scripts/task3_database/insert_reviews.py
-python scripts/task3_database/verify_database.py
+# Set database credentials (optional, defaults to localhost/postgres)
+# Windows PowerShell:
+$env:DB_PASSWORD = "your_password"
+
+# Then run:
+python scripts/task3_database/database_setup.py    # Create tables
+python scripts/task3_database/insert_reviews.py    # Insert data
+python scripts/task3_database/verify_database.py  # Verify integrity
 ```
 
 6. **Run Task 4: Insights and Visualizations**

@@ -19,3 +19,4 @@ matplotlib
 seaborn
 jupyter
 wordcloud
+tabulate
